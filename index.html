@@ -6,6 +6,9 @@
   <title>Complete Step-by-Step Guide: Implementing RBAC in Power Apps (Enhanced Edition)</title>
 
   <style>
+    /* =========================
+       PART 1: BASE STYLES
+       ========================= */
     /* Basic Layout and Resets */
     body {
       font-family: Arial, sans-serif;
@@ -33,6 +36,12 @@
       color: #2c5898;
       text-align: center;
       margin-top: 0;
+      margin-bottom: 5px;
+    }
+    .last-updated {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #666;
       margin-bottom: 30px;
     }
     h2 {
@@ -134,9 +143,10 @@
       color: #496c2e;
     }
 
-    /* Code Blocks with <pre><code> + minimal syntax highlight classes */
+    /* Code Blocks + "Copy Code" Buttons */
     pre {
       margin: 0 0 15px 0;
+      position: relative; /* for "Copy" button positioning */
     }
     code {
       display: block;
@@ -154,6 +164,22 @@
       border-radius: 3px;
       font-family: Consolas, Monaco, 'Andale Mono', monospace;
       color: #d63384;
+    }
+
+    .copy-button {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #4472c4;
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      border-radius: 4px;
+    }
+    .copy-button:hover {
+      background: #2c5898;
     }
 
     /* Table of Contents */
@@ -207,12 +233,129 @@
         background-color: #3a3a3a;
       }
     }
+
+    /* ==============================================
+       PART 2: VISUAL FLAIR — TIER COLUMNS STYLES
+       ============================================== */
+    :root {
+      --bronze-color: #cd7f32;
+      --silver-color: #c0c0c0;
+      --gold-color: #ffd700;
+      --text-dark: #333;
+      --text-light: #fff;
+      --bg-color: #fafafa;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bronze-color: #8B4513;
+        --silver-color: #808080;
+        --gold-color: #B8860B;
+        --text-dark: #f0f0f0;
+        --text-light: #fff;
+        --bg-color: #121212;
+      }
+    }
+
+    /* Container for the RBAC tiers overview */
+    .visual-flair-container {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      margin: 20px auto;
+      max-width: 1200px;
+      gap: 15px;
+    }
+
+    .tier-heading {
+      text-align: center;
+      margin: 20px 0 0 0;
+      color: var(--text-dark);
+    }
+
+    /* Each tier's column */
+    .tier {
+      flex: 1;
+      margin: 10px;
+      padding: 20px;
+      border-radius: 8px;
+      min-width: 250px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tier.bronze {
+      background-color: var(--bronze-color);
+      color: var(--text-light);
+    }
+    .tier.silver {
+      background-color: var(--silver-color);
+      color: var(--text-dark);
+    }
+    .tier.gold {
+      background-color: var(--gold-color);
+      color: var(--text-dark);
+    }
+
+    .tier h2 {
+      margin-top: 0;
+      font-size: 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      padding-bottom: 10px;
+    }
+
+    .tier-subtitle {
+      text-align: center;
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+
+    .icon {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0 20px 0;
+      height: 60px;
+      align-items: center;
+    }
+
+    .step {
+      background-color: rgba(255,255,255,0.15);
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 0.95rem;
+    }
+    .step-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .arrow {
+      text-align: center;
+      margin: 5px 0;
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    @media (max-width: 768px) {
+      .visual-flair-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .step {
+        font-size: 0.9rem;
+      }
+    }
   </style>
 </head>
 <body>
-<div class="page-container">
 
+<div class="page-container">
   <h1>Complete Step-by-Step Guide: Implementing RBAC in Power Apps (Enhanced Edition)</h1>
+  <p class="last-updated">Last Updated: May 2025</p>
 
   <div class="toc">
     <h3>Table of Contents</h3>
@@ -233,6 +376,7 @@
       <li><a href="#troubleshooting">Step 12: Troubleshooting Guide</a></li>
       <li><a href="#best-practices">Best Practices &amp; Scale Considerations</a></li>
       <li><a href="#conclusion">Conclusion &amp; Next Steps</a></li>
+      <li><a href="#visual-tiers">Visual RBAC Tiers Overview</a></li>
     </ul>
   </div>
 
@@ -367,7 +511,6 @@
       <strong>Naming Convention Best Practice:</strong> Include your app name in the group name (e.g., <em>InventoryApp-Admins</em>) to simplify identification when multiple apps exist.
     </div>
 
-    <!-- UPN vs EMAIL Alignment Section -->
     <div class="warning">
       <h3>UPN vs. Email Alignment</h3>
       <p>
@@ -392,7 +535,6 @@
         source of truth (e.g., userPrincipalName).
       </p>
     </div>
-    <!-- End UPN vs EMAIL Alignment Section -->
 
     <div class="summary-box">
       <h4>At a Glance – Azure AD Groups</h4>
@@ -464,9 +606,20 @@
     </p>
 
     <div class="note">
-      <strong>Alternative Approach (Preview):</strong> 
-      In some cases, you can use <code>isInRole()</code> in Power Apps to check roles, though it’s still evolving. It may simplify or augment this Bronze approach if your environment supports it.
+      <strong>About isInRole() (Preview):</strong>  
+      Some Power Apps environments support a function called <code>isInRole()</code> (currently in preview). It can simplify membership checks:
     </div>
+
+    <pre><code>
+// Simple isInRole() usage example
+If(
+   isInRole("SecurityGroupEditor"), 
+   Navigate(EditorScreen), 
+   Navigate(ViewScreen)
+);
+</code></pre>
+
+    <p><em>Limitations:</em> <code>isInRole()</code> may not support nested groups yet, and not all tenants have it enabled. Check official documentation or release notes before relying on it in production.</p>
 
     <h3>Step 4.1: Add the Office365Users Connector</h3>
     <ol>
@@ -476,7 +629,7 @@
     </ol>
 
     <h3>Step 4.2: Basic OnStart Logic, in Chunks</h3>
-    <p>Below is typical code for your App’s <strong>OnStart</strong> property, split into manageable parts.</p>
+    <p>Below is typical code for your App’s <strong>OnStart</strong> property, broken into smaller parts.</p>
 
     <pre><code>
 // PART A: INITIAL SETUP & CACHING
@@ -540,7 +693,7 @@ Set(gblUICachingReady, true);
 // If security needs refresh, start a Timer to load after UI
 If(gblSecurityNeedsRefresh, UpdateContext({_startSecurityLoadTimer: true}));
 
-// Mark app initialised
+// Mark app initialized
 Set(gblIsInitialized, true);
 </code></pre>
 
@@ -647,7 +800,7 @@ SomeFormField.DisplayMode:
         <li>Uses the built-in <em>Office365Users</em> connector for membership checks.</li>
         <li>Suitable for smaller user bases or simpler security demands.</li>
         <li>Use caching to reduce repeated calls and handle potential network/connector issues.</li>
-        <li>Consider <code>isInRole()</code> as a future alternative or supplement if it meets your environment’s needs.</li>
+        <li><code>isInRole()</code> can simplify checks if available, but may not handle nested groups.</li>
       </ul>
     </div>
   </div>
@@ -668,8 +821,10 @@ SomeFormField.DisplayMode:
     </ol>
 
     <div class="warning">
-      <strong>Security Note:</strong>  
+      <strong>Security Note:</strong><br>
       Keep the client secret secure. Use OAuth 2.0 so calls respect user-based delegation and comply with your tenant’s policies. You can also implement refresh token strategies to reduce re-authentication overhead.
+      <br /><br />
+      <em>Client Secret Management:</em> For production apps, consider storing the secret in <strong>Azure Key Vault</strong> (or a similar secret store). Exposing it directly in environment variables or solution files can pose security risks if not handled carefully.
     </div>
 
     <h3>Step 5.2: Create the Custom Connector</h3>
@@ -755,7 +910,7 @@ Set(LoadUserSecurity, () => {
     <div class="warning">
       <strong>Handling Large Memberships &amp; Throttling:</strong>
       <ul>
-        <li><em>Pagination</em>: If a user is in hundreds of groups, the Graph API may return paginated results. Implement continuation token handling in your connector or flows.</li>
+        <li><em>Pagination</em>: If a user is in hundreds of groups, the Graph API may return paginated results. Check for <code>@odata.nextLink</code> in responses and loop until all data is retrieved.</li>
         <li><em>429 Errors</em>: Use exponential backoff or retry logic to respect throttling policies.</li>
       </ul>
     </div>
@@ -766,7 +921,7 @@ Set(LoadUserSecurity, () => {
         <li>Custom connector to Microsoft Graph for richer membership checks.</li>
         <li>Ideal for mid-scale scenarios where Bronze might be too limited.</li>
         <li>Enables fine-tuned requests and advanced parsing (JSON schemas).</li>
-        <li>Mind the Graph’s throttling and pagination in large environments.</li>
+        <li>Plan for pagination and throttling in large environments.</li>
       </ul>
     </div>
   </div>
@@ -780,7 +935,7 @@ Set(LoadUserSecurity, () => {
 
     <h3>Nested or Transitive Membership Checks</h3>
     <p>
-      In Microsoft Graph, <code>/users/{userPrincipalName}/transitiveMemberOf</code> lets you see nested group memberships (i.e., groups inside groups).
+      In Microsoft Graph, <code>/users/{userPrincipalName}/transitiveMemberOf</code> can reveal nested group memberships (i.e., groups inside groups). Remember to handle pagination and throttling similarly.
     </p>
 
     <h3>Example Code (Gold Method)</h3>
@@ -795,7 +950,7 @@ Set(LoadUserSecurity, () => {
     // Step 1: Retrieve configured group IDs
     ClearCollect(colRoleConfigs, Filter(AppConfig, StartsWith(Title,"SecurityGroup")));
 
-    // Step 2: Use advanced Graph call
+    // Step 2: Use advanced Graph call for transitive memberships
     Set(locTransitiveResponse,
         IfError(
             AzureGroupConnector.AdvancedMembershipCheck(User().Email).value,
@@ -805,7 +960,7 @@ Set(LoadUserSecurity, () => {
         )
     );
 
-    // Step 3: Flatten to ID list (handle pagination if needed)
+    // Step 3: Flatten to ID list (handle pagination via @odata.nextLink if needed)
     Set(locUserGroupIDs, ForAll(locTransitiveResponse, id));
 
     // Step 4: Determine role access
@@ -851,11 +1006,11 @@ Set(LoadUserSecurity, () => {
 </code></pre>
 
     <div class="warning">
-      <strong>Large-Scale Considerations:</strong><br>
+      <strong>Large-Scale Considerations:</strong>
       <ul>
-        <li><em>Batch security checks</em> in a queue if needed to avoid spikes.</li>
-        <li>Implement backoff logic for 429 errors or repeated calls.</li>
-        <li>Paging may be essential if a single user belongs to thousands of nested groups.</li>
+        <li><em>Batch membership checks</em> in a queue if needed to avoid spikes.</li>
+        <li>Implement <em>backoff logic</em> for 429 errors or repeated calls.</li>
+        <li><em>Pagination</em> is essential if a single user belongs to thousands of nested groups.</li>
       </ul>
     </div>
 
@@ -864,7 +1019,8 @@ Set(LoadUserSecurity, () => {
       <ul>
         <li>Transitive group checks for nested group hierarchies.</li>
         <li>Advanced caching with version/triggers for refresh.</li>
-        <li>Recommended for enterprise apps with large user bases.</li>
+        <li>Recommended for enterprise apps with large user bases (500+ users).</li>
+        <li>Detailed logging/auditing at scale, plus robust error handling.</li>
       </ul>
     </div>
   </div>
@@ -883,7 +1039,7 @@ Set(LoadUserSecurity, () => {
     <h3>Querying Dataverse Roles (Optional)</h3>
     <ul>
       <li><strong>Custom Connector:</strong> Query <code>systemuserroles_association</code> for the user, then cross-check with AD roles if needed.</li>
-      <li><strong>Power Automate Flow:</strong> A flow with admin privileges can list user’s Dataverse roles and return them to the app.</li>
+      <li><strong>Power Automate Flow:</strong> A flow with admin privileges can list a user’s Dataverse roles and return them to the app.</li>
     </ul>
 
     <div class="summary-box">
@@ -1063,7 +1219,7 @@ Patch(
     <ul>
       <li>Create test accounts for each role combination (Admin, Editor, Reader, None).</li>
       <li>Verify UI behaviour (hidden buttons, read-only forms, etc.).</li>
-      <li>Test role changes in Azure AD to ensure the app detects them after caching expires or manual refresh.</li>
+      <li>Test role changes in Azure AD to ensure the app detects them after caching expires or after a manual refresh.</li>
       <li>Assess performance with a large user count or many groups; watch for throttling or slow loads.</li>
       <li>Check logs to confirm correct event data and timestamps.</li>
     </ul>
@@ -1095,7 +1251,7 @@ Patch(
       <tr>
         <td>Slow app load</td>
         <td>Membership checks block UI</td>
-        <td>Use deferred loading with Timer, show partial UI first</td>
+        <td>Use deferred loading with a Timer, show partial UI first</td>
       </tr>
       <tr>
         <td>Graph returns 429</td>
@@ -1166,16 +1322,16 @@ Patch(
 
     <h3>Key Takeaways</h3>
     <ol>
-      <li><strong>Front-End Security is Not Enough</strong>  
+      <li><strong>Front-End Security is Not Enough</strong><br />
         Pair UI-based RBAC with data-level security in Dataverse, SharePoint, or SQL.
       </li>
-      <li><strong>Use Caching &amp; Handle Throttling</strong>  
+      <li><strong>Use Caching &amp; Handle Throttling</strong><br />
         Graph calls can be rate-limited; caching prevents excessive API usage.
       </li>
-      <li><strong>Custom Connectors &amp; Graph API</strong>  
+      <li><strong>Custom Connectors &amp; Graph API</strong><br />
         Offer more control and advanced capabilities but require additional configuration.
       </li>
-      <li><strong>Administration &amp; Auditing</strong>  
+      <li><strong>Administration &amp; Auditing</strong><br />
         Tools for managing roles dynamically and tracking security events are essential for compliance.
       </li>
     </ol>
@@ -1197,8 +1353,211 @@ Patch(
       <strong>Downloadable Samples:</strong><br>
       Consider providing a sample Power Apps solution (e.g., a <em>.msapp</em> file or GitHub link) illustrating the Bronze method. This helps new developers see a working example immediately.
     </div>
-  </div>
+
+    <div class="note">
+      <strong>Interactive Elements (If Applicable):</strong><br>
+      In a larger learning platform, you could offer collapsible code sections or tooltips for acronyms. In this static HTML guide, code blocks are fully expanded for clarity.
+    </div>
+  </div><!-- end conclusion section -->
+
+
+  <!-- VISUAL FLAIR SECTION -->
+  <div class="section" id="visual-tiers">
+    <h2>Visual RBAC Tiers Overview</h2>
+    <p>
+      For a quick comparison of the three RBAC approaches—Bronze, Silver, and Gold—here’s a visual summary showing the typical steps and their suitability. 
+      <br /><em>(SVG icons below are marked as decorative via <code>aria-hidden="true"</code>.)</em>
+    </p>
+
+    <h3 class="tier-heading">Compare Bronze, Silver, and Gold Methods</h3>
+    <div class="visual-flair-container">
+      <!-- Bronze Column -->
+      <div class="tier bronze">
+        <h2>Bronze Method</h2>
+        <div class="tier-subtitle">Basic Implementation</div>
+        
+        <div class="icon">
+          <!-- Basic icon for Bronze (aria-hidden) -->
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        
+        <div class="step">
+          <span class="step-title">Office365Users Connector</span>
+          Uses built-in connector to check group memberships
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">Direct Group Membership</span>
+          Checks if user is directly in security groups
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">Basic Caching</span>
+          Uses LoadData/SaveData to avoid repeated calls
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">UI Controls</span>
+          Controls visibility based on global variables
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">Suitable For</span>
+          Small teams (&lt;100 users) with simple role needs
+        </div>
+      </div>
+      
+      <!-- Silver Column -->
+      <div class="tier silver">
+        <h2>Silver Method</h2>
+        <div class="tier-subtitle">Enhanced Implementation</div>
+        
+        <div class="icon">
+          <!-- Basic icon for Silver (aria-hidden) -->
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+        </div>
+        
+        <div class="step">
+          <span class="step-title">Azure AD App Registration</span>
+          Register app in Azure AD for Graph API access
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">Graph API Permissions</span>
+          Configure Group.Read.All permission
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">Custom Connector</span>
+          Build connector to Microsoft Graph API
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">Direct Membership API</span>
+          Call /users/{upn}/memberOf endpoint
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">Enhanced Caching</span>
+          Version-based caching with timestamps
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">Suitable For</span>
+          Medium deployments (100-500 users) with multiple roles
+        </div>
+      </div>
+      
+      <!-- Gold Column -->
+      <div class="tier gold">
+        <h2>Gold Method</h2>
+        <div class="tier-subtitle">Advanced Implementation</div>
+        
+        <div class="icon">
+          <!-- Basic icon for Gold (aria-hidden) -->
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="7"></circle>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+          </svg>
+        </div>
+        
+        <div class="step">
+          <span class="step-title">Advanced Graph API Integration</span>
+          Complete API integration with error handling and throttling management
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">Transitive Membership</span>
+          Call /users/{upn}/transitiveMemberOf to check nested groups
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">RBAC Auditing & Logging</span>
+          Comprehensive logging in Dataverse tables with analytics
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">Admin Management Interface</span>
+          In-app configuration screen for admins to manage role settings
+        </div>
+        
+        <div class="arrow">↓</div>
+        
+        <div class="step">
+          <span class="step-title">Suitable For</span>
+          Enterprise deployments (500+ users) with complex security requirements
+        </div>
+      </div>
+    </div>
+  </div><!-- end visual-tiers section -->
 
 </div><!-- end page-container -->
+
+<script>
+/* ==============================================
+   PART 3: JAVASCRIPT FOR "COPY CODE" BUTTON
+   ============================================== */
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Select all <pre><code> blocks
+  const codeBlocks = document.querySelectorAll('pre code');
+
+  codeBlocks.forEach((block) => {
+    // Create a "Copy" button
+    const copyBtn = document.createElement('button');
+    copyBtn.innerText = 'Copy';
+    copyBtn.className = 'copy-button';
+
+    // When button is clicked, copy the code text
+    copyBtn.addEventListener('click', () => {
+      // The actual text to copy:
+      const codeText = block.innerText;
+      // Copy to clipboard (requires HTTPS or localhost in most browsers)
+      navigator.clipboard.writeText(codeText).then(() => {
+        alert('Code copied to clipboard');
+      }, (err) => {
+        alert('Unable to copy code: ' + err);
+      });
+    });
+
+    // Insert the button into the <pre> container
+    // block.parentNode is the <pre> element
+    block.parentNode.style.position = 'relative';
+    block.parentNode.appendChild(copyBtn);
+  });
+});
+</script>
+
 </body>
 </html>
