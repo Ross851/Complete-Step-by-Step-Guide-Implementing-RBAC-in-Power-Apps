@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Step-by-Step Guide: Implementing RBAC in Power Apps</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; line-height: 1.6; color: #333; }
+        .section { background: #fff; padding: 20px; border-radius: 5px; margin-bottom: 25px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+        h1 { color: #2c5898; text-align: center; margin-bottom: 30px; }
+        h2 { color: #2c5898; margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; scroll-margin-top: 20px; }
+        h3 { color: #4472c4; margin-top: 20px; scroll-margin-top: 20px; }
+        code { display: block; background: #272822; color: #f8f8f2; padding: 15px; border-radius: 3px; overflow-x: auto; margin-bottom: 15px; line-height: 1.4; font-family: Consolas, Monaco, 'Andale Mono', monospace; }
+        .inline-code { background: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-family: Consolas, Monaco, 'Andale Mono', monospace; color: #d63384; }
+        ul, ol { padding-left: 25px; margin-bottom: 20px; }
+        li { margin-bottom: 8px; }
+        .note { background-color: #e6f3ff; padding: 15px; border-left: 4px solid #4472c4; margin: 15px 0; }
+        .warning { background-color: #fff8e6; padding: 15px; border-left: 4px solid #f0ad4e; margin: 15px 0; }
+        .danger { background-color: #ffe6e6; padding: 15px; border-left: 4px solid #d9534f; margin: 15px 0; }
+        .implementation-type { display: inline-block; padding: 3px 8px; border-radius: 3px; font-size: 0.8em; margin-right: 10px; }
+        .bronze { background-color: #cd7f32; color: white; }
+        .silver { background-color: #c0c0c0; color: white; }
+        .gold { background-color: #ffd700; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .key-points { background-color: #eaf7ea; padding: 15px; border-left: 4px solid #5cb85c; margin: 15px 0; }
+        .toc { 
+            background-color: #f8f8f8; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 20px 0; 
+            max-width: 300px; 
+            position: sticky; 
+            top: 20px;
+        }
+        .toc h3 { margin-top: 0; color: #333; }
+        .toc ul { padding-left: 20px; }
+        .toc li { margin-bottom: 5px; }
+        .toc a { color: #2c5898; text-decoration: none; }
+        .toc a:hover { text-decoration: underline; }
+        @media (max-width: 768px) {
+            .toc { position: static; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Complete Step-by-Step Guide: Implementing RBAC in Power Apps</h1>
+
+    <div class="toc">
+        <h3>Table of Contents</h3>
+        <ul>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#key-concepts">Key Concepts and Terminology</a></li>
+            <li><a href="#planning">Step 1: Planning Your RBAC Strategy</a></li>
+            <li><a href="#azure-ad-groups">Step 2: Set Up Azure AD Security Groups</a></li>
+            <li><a href="#store-group-ids">Step 3: Store Security Group IDs</a></li>
+            <li><a href="#bronze-method">Step 4: Bronze Method - Basic Implementation</a></li>
+            <li><a href="#silver-method">Step 5: Silver Method - Custom Connector</a></li>
+            <li><a href="#gold-method">Step 6: Gold Method - Advanced Implementation</a></li>
+            <li><a href="#dataverse-security">Step 7: Aligning with Dataverse Security</a></li>
+            <li><a href="#role-management">Step 8: Dynamic Role Management</a></li>
+            <li><a href="#access-requests">Step 9: Self-Service Access Requests</a></li>
+            <li><a href="#rbac-analytics">Step 10: RBAC Analytics and Monitoring</a></li>
+            <li><a href="#testing">Step 11: Testing and Validation</a></li>
+            <li><a href="#troubleshooting">Step 12: Troubleshooting Guide</a></li>
+            <li><a href="#best-practices">Best Practices and Scale Considerations</a></li>
+            <li><a href="#conclusion">Conclusion and Next Steps</a></li>
+        </ul>
+    </div>
+
+    <div class="section" id="introduction">
+        <h2>Introduction</h2>
+        <p>This comprehensive guide provides a step-by-step implementation of Role-Based Access Control (RBAC) in Power Apps, suitable for all Power Platform developers from beginners to advanced. You will learn how to efficiently manage UI visibility and data access based on user roles defined in Azure AD Security Groups.</p>
+        
+        <h3>Business Value of RBAC</h3>
+        <ul>
+            <li><strong>Enhanced Security:</strong> Enforce principle of least privilege, ensuring users only access what they need</li>
+            <li><strong>Improved Compliance:</strong> Meet regulatory requirements in industries like healthcare, finance, and government</li>
+            <li><strong>Reduced Support Costs:</strong> Fewer user errors from accessing unauthorized features</li>
+            <li><strong>Better User Experience:</strong> Cleaner, simpler interfaces showing only relevant options</li>
+            <li><strong>Scalable Management:</strong> Centrally manage permissions through Azure AD groups instead of per-user assignments</li>
+        </ul>
+        
+        <h3>Implementation Approaches</h3>
+        <p>This guide presents three implementation methods of increasing sophistication:</p>
+        <ul>
+            <li><span class="implementation-type bronze">Bronze</span> Basic implementation using built-in connectors - ideal for small teams and simple apps</li>
+            <li><span class="implementation-type silver">Silver</span> Enhanced implementation with custom connectors - suitable for departmental apps with multiple roles</li>
+            <li><span class="implementation-type gold">Gold</span> Advanced implementation with nested groups and optimized performance - designed for enterprise-wide apps</li>
+        </ul>
+    </div>
+
+    <div class="section" id="key-concepts">
+        <h2>Key Concepts and Terminology</h2>
+        <ul>
+            <li><strong>RBAC (Role-Based Access Control):</strong> Security mechanism that restricts system access based on the roles assigned to individual users</li>
+            <li><strong>Azure AD Security Groups:</strong> Used to organize users into logical groups for access control purposes</li>
+            <li><strong>Microsoft 365 Groups vs. Security Groups:</strong> Security groups are specifically designed for permission management, while Microsoft 365 groups include collaboration features</li>
+            <li><strong>Custom Connectors:</strong> Extensions that allow Power Apps to communicate with APIs like Microsoft Graph</li>
+            <li><strong>Microsoft Graph API:</strong> Gateway to Microsoft 365 data and services including Azure AD group membership</li>
+            <li><strong>Power Apps Context Variables:</strong> App-scoped variables (prefixed with "loc") that exist only during the current screen session</li>
+            <li><strong>Power Apps Global Variables:</strong> App-wide variables (prefixed with "gbl") that persist throughout the app session</li>
+            <li><strong>Collections:</strong> In-memory tables that can store and manipulate data within the app</li>
+            <li><strong>Environment Variables:</strong> Store configuration values centrally in the Power Platform environment</li>
+            <li><strong>Dataverse Security:</strong> Backend database security model that controls data access but does not extend to UI elements</li>
+        </ul>
+        
+        <div class="warning">
+            <strong>Important:</strong> Power Apps Canvas apps do not automatically inherit or enforce Dataverse security at the UI level, even when connected to Dataverse datasources. You must implement frontend RBAC to control UI visibility.
+        </div>
+    </div>
+
+    <div class="section" id="planning">
+        <h2>Step 1: Planning Your RBAC Strategy</h2>
+        
+        <h3>Role Inheritance Design</h3>
+        <p>Before implementation, plan your role hierarchy. Typically:</p>
+        <ul>
+            <li><strong>Admin:</strong> Full access to all features, including security management</li>
+            <li><strong>Editor:</strong> Can create and modify content but can't manage system settings</li>
+            <li><strong>Reader:</strong> Can view content but not modify it</li>
+        </ul>
+        
+        <h3>Aligning Canvas App UI Security with Dataverse</h3>
+        <p>If your app uses Dataverse, align your RBAC implementation with existing Dataverse security roles:</p>
+        
+        <table>
+            <tr>
+                <th>Azure AD Security Group</th>
+                <th>Canvas App Role</th>
+                <th>Dataverse Security Role</th>
+            </tr>
+            <tr>
+                <td>App-Admin-Group</td>
+                <td>Admin</td>
+                <td>System Administrator</td>
+            </tr>
+            <tr>
+                <td>App-Editor-Group</td>
+                <td>Editor</td>
+                <td>Basic User with Write</td>
+            </tr>
+            <tr>
+                <td>App-Reader-Group</td>
+                <td>Reader</td>
+                <td>Basic User with Read-only</td>
+            </tr>
+        </table>
+        
+        <div class="danger">
+            <strong>Important Security Consideration:</strong> Dataverse security controls data access but does NOT automatically control UI elements in Canvas apps. You must implement frontend RBAC to ensure buttons, screens, and other UI elements respect user permissions. However, frontend UI controls should never be your only line of defense - always pair them with proper backend security.
+        </div>
+    </div>
+
+    <div class="section" id="azure-ad-groups">
+        <h2>Step 2: Set Up Azure AD Security Groups</h2>
+        <ol>
+            <li>Navigate to <strong>Azure Portal</strong> → <strong>Azure Active Directory</strong> → <strong>Groups</strong></li>
+            <li>Create security groups for each role in your application:
+                <ul>
+                    <li>YourApp-Admins</li>
+                    <li>YourApp-Editors</li>
+                    <li>YourApp-Readers</li>
+                </ul>
+            </li>
+            <li>For each group, set <strong>Group type</strong> to <strong>Security</strong></li>
+            <li>Add appropriate users to each group</li>
+            <li>Note down each group's <strong>Object ID</strong> (found in the group's Overview page)</li>
+        </ol>
+        
+        <div class="note">
+            <strong>Best Practice:</strong> Use a consistent naming convention for your security groups that includes your app name (e.g., "InventoryApp-Admins"). This makes groups easier to identify when you have multiple Power Apps.
+        </div>
+    </div>
+
+    <div class="section" id="store-group-ids">
+        <h2>Step 3: Store Security Group IDs</h2>
+        
+        <h3>Option A: SharePoint List (Simpler)</h3>
+        <ol>
+            <li>Create a SharePoint list named <strong>AppConfig</strong> with columns <strong>Title</strong> (Text) and <strong>Value</strong> (Text)</li>
+            <li>Add the following entries:
+                <ul>
+                    <li>Title: <strong>SecurityGroupAdmin</strong>, Value: <em>[Admin Group Object ID]</em></li>
+                    <li>Title: <strong>SecurityGroupEditor</strong>, Value: <em>[Editor Group Object ID]</em></li>
+                    <li>Title: <strong>SecurityGroupReader</strong>, Value: <em>[Reader Group Object ID]</em></li>
+                    <li>Title: <strong>AppVersion</strong>, Value: <strong>1.0</strong></li>
+                    <li>Title: <strong>LastRoleUpdate</strong>, Value: <em>[Current date in ISO format]</em></li>
+                    <li>Title: <strong>RoleCacheDurationHours</strong>, Value: <strong>4</strong></li>
+                </ul>
+            </li>
+        </ol>
+        
+        <h3>Option B: Environment Variables (More Secure)</h3>
+        <ol>
+            <li>In Power Platform Admin Center, navigate to your environment</li>
+            <li>Go to <strong>Settings</strong> → <strong>Environment Variables</strong></li>
+            <li>Create variables with the same names as above</li>
+            <li>Set appropriate values for each variable</li>
+        </ol>
+        
+        <h3>Option C: Dataverse Table (Enterprise-Ready)</h3>
+        <ol>
+            <li>Create a custom Dataverse table named <strong>Application Configuration</strong></li>
+            <li>Add columns for <strong>Name</strong> (Text) and <strong>Value</strong> (Text)</li>
+            <li>Create records with the same values as Option A</li>
+            <li>Set appropriate security roles for this table</li>
+        </ol>
+        
+        <div class="note">
+            <strong>Alternative Storage Options:</strong> For organizations with specific security/compliance requirements, these configuration values can also be stored in Azure Key Vault or Azure Storage. This may require additional custom connectors or Power Automate flows to retrieve the values securely.
+        </div>
+    </div>
+
+    <div class="section" id="bronze-method">
+        <h2>Step 4: <span class="implementation-type bronze">Bronze Method</span> - Basic Implementation</h2>
+        <p>The Bronze method uses the built-in Office365Users connector and is ideal for small apps with simple role requirements. It's the easiest to implement but has limitations for large-scale deployments.</p>
+        
+        <h3>Step 4.1: Add Office365Users Connector</h3>
+        <ol>
+            <li>In your Canvas app, go to <strong>Data</strong> → <strong>Add data</strong></li>
+            <li>Search for and add the <strong>Office365Users</strong> connector</li>
+            <li>Connect to your SharePoint list or environment variables created in Step 3</li>
+        </ol>
+        
+        <h3>Step 4.2: Setup App OnStart Logic</h3>
+        <p>Add this code to your app's <strong>OnStart</strong> property:</p>
+        
+        <code>
+// STAGE 1: INITIALIZE VARIABLES
+// -----------------------------
+// Set up version tracking and basic state flags
+Set(gblAppVersion, "1.0");
+Set(gblIsInitialized, false);
+
+
+// STAGE 2: LOAD CACHED SECURITY
+// ----------------------------
+// Attempt to load previously cached security context for this user
+Set(gblUserCache, LoadData(App, "UserSecurityCache_" & Text(User().Email)));
+
+
+// STAGE 3: GET CACHE CONFIGURATION
+// ------------------------------
+// Get cache duration from environment variable or use default (4 hours)
+Set(
+    gblRoleCacheDuration, 
+    If(
+        !IsBlank(LookUp(AppConfig, Title = "RoleCacheDurationHours").Value),
+        Value(LookUp(AppConfig, Title = "RoleCacheDurationHours").Value),
+        4
+    )
+);
+
+
+// STAGE 4: DETERMINE IF SECURITY REFRESH IS NEEDED
+// ----------------------------------------------
+// Only refresh security if cache is missing, old, or user changed
+If(
+    IsEmpty(gblUserCache) || 
+    DateDiff(Now(), gblUserCache.Timestamp) > gblRoleCacheDuration || 
+    gblUserCache.Email <> User().Email,
+    
+    // STAGE 4A: SET UP FOR DEFERRED REFRESH
+    // -----------------------------------
+    // Flag that we need to refresh security, but use cached values for now
+    Set(gblSecurityNeedsRefresh, true);
+    Set(gblUserRoles, If(IsEmpty(gblUserCache), [], gblUserCache.Roles));
+    Set(gblIsAdmin, If(IsEmpty(gblUserCache), false, LookUp(gblUserCache.RoleFlags, Role = "Admin").HasAccess));
+    Set(gblIsEditor, If(IsEmpty(gblUserCache), false, LookUp(gblUserCache.RoleFlags, Role = "Editor").HasAccess));
+    Set(gblIsReader, If(IsEmpty(gblUserCache), false, LookUp(gblUserCache.RoleFlags, Role = "Reader").HasAccess)),
+    
+    // STAGE 4B: USE CACHED SECURITY
+    // ---------------------------
+    // Cache is valid, no need to refresh security from Azure AD
+    Set(gblSecurityNeedsRefresh, false);
+    Set(gblUserRoles, gblUserCache.Roles);
+    Set(gblIsAdmin, LookUp(gblUserCache.RoleFlags, Role = "Admin").HasAccess);
+    Set(gblIsEditor, LookUp(gblUserCache.RoleFlags, Role = "Editor").HasAccess);
+    Set(gblIsReader, LookUp(gblUserCache.RoleFlags, Role = "Reader").HasAccess)
+);
+
+
+// STAGE 5: COMPUTE VISIBILITY FLAGS
+// ------------------------------
+// Pre-compute common visibility scenarios for UI controls
+Set(gblShowAdminFeatures, If(IsBlank(gblIsAdmin), false, gblIsAdmin));
+Set(gblShowEditorFeatures, If(IsBlank(gblIsEditor), false, gblIsEditor || gblIsAdmin));
+Set(gblShowReaderFeatures, If(IsBlank(gblIsReader), false, gblIsReader || gblIsEditor || gblIsAdmin));
+
+
+// STAGE 6: ENABLE UI RENDERING
+// -------------------------
+// Mark UI as ready to display based on cached roles
+Set(gblUICachingReady, true);
+
+
+// STAGE 7: SET UP MANUAL REFRESH FUNCTION
+// ------------------------------------
+// Add function for users to manually refresh their roles if needed
+Set(RefreshUserRoles, () => {
+    Set(gblSecurityNeedsRefresh, true);
+    LoadUserSecurity();
+    Notify("Security roles refreshed successfully");
+});
+
+
+// STAGE 8: SCHEDULE DEFERRED SECURITY CHECK
+// --------------------------------------
+// Schedule security loading after UI renders for better performance
+If(
+    gblSecurityNeedsRefresh,
+    // Set a context variable that will trigger the Timer control 
+    // that performs the deferred security loading
+    UpdateContext({_startSecurityLoadTimer: true})
+);
+
+
+// STAGE 9: MARK INITIALIZATION COMPLETE
+// ----------------------------------
+Set(gblIsInitialized, true);
+        </code>
+
+        <div class="note">
+            <strong>Timer Implementation Note:</strong> Create a Timer control on your app's loading screen with these properties:
+            <ul>
+                <li><strong>Name:</strong> tmrSecurityLoad</li>
+                <li><strong>Duration:</strong> 500 (milliseconds)</li>
+                <li><strong>Start:</strong> _startSecurityLoadTimer</li>
+                <li><strong>OnTimerEnd:</strong> LoadUserSecurity(); UpdateContext({_startSecurityLoadTimer: false})</li>
+                <li><strong>AutoStart:</strong> false</li>
+                <li><strong>Repeat:</strong> false</li>
+                <li><strong>Visible:</strong> false</li>
+            </ul>
+            This Timer control performs the actual deferred security loading triggered by the _startSecurityLoadTimer context variable.
+        </div>
+        
+        <h3>Step 4.3: Create Security Loading Function</h3>
+        <p>Add this function in your app's OnStart after the previous code, or create a separate screen for global functions:</p>
+        
+        <code>
+// STAGE 1: FUNCTION DEFINITION
+// --------------------------
+// Function to load security groups and check membership
+Set(LoadUserSecurity, () => {
+    
+
+    // STAGE 2: PREVENT DUPLICATE CALLS
+    // -----------------------------
+    // Only proceed if not already loading security
+    If(
+        !gblSecurityLoading,
+        
+
+        // STAGE 3: SET LOADING FLAG
+        // -----------------------
+        Set(gblSecurityLoading, true);
+        
+
+        // STAGE 4: GET SECURITY GROUP IDs
+        // ----------------------------
+        // Get security group IDs from configuration
+        Set(varSecurityGroupAdmin, LookUp(AppConfig, Title = "SecurityGroupAdmin").Value);
+        Set(varSecurityGroupEditor, LookUp(AppConfig, Title = "SecurityGroupEditor").Value);
+        Set(varSecurityGroupReader, LookUp(AppConfig, Title = "SecurityGroupReader").Value);
+        
+
+        // STAGE 5: CHECK USER GROUP MEMBERSHIP
+        // ---------------------------------
+        // Get all groups the user belongs to, with error handling
+        Set(locUserGroups, IfError(
+            Office365Users.UserGetMemberGroups(User().Email).value,
+            Notify("Error loading security groups. Using cached permissions if available.");
+            Set(gblInitError, true);
+            []
+        ));
+        
+
+        // STAGE 6: DETERMINE ROLE ACCESS
+        // ---------------------------
+        // Check if user is a member of each role's security group
+        Set(gblIsAdmin, varSecurityGroupAdmin in locUserGroups);
+        Set(gblIsEditor, varSecurityGroupEditor in locUserGroups);
+        Set(gblIsReader, varSecurityGroupReader in locUserGroups);
+        
+
+        // STAGE 7: STORE ROLE ASSIGNMENTS
+        // ----------------------------
+        // Build collection of all role assignments for reference
+        ClearCollect(gblUserRoles, 
+            {roleName: "SecurityGroupAdmin", hasAccess: gblIsAdmin},
+            {roleName: "SecurityGroupEditor", hasAccess: gblIsEditor},
+            {roleName: "SecurityGroupReader", hasAccess: gblIsReader}
+        );
+        
+
+        // STAGE 8: UPDATE VISIBILITY FLAGS
+        // -----------------------------
+        // Compute derived flags for UI visibility
+        Set(gblShowAdminFeatures, gblIsAdmin);
+        Set(gblShowEditorFeatures, gblIsEditor || gblIsAdmin);
+        Set(gblShowReaderFeatures, gblIsReader || gblIsEditor || gblIsAdmin);
+        
+
+        // STAGE 9: CACHE SECURITY CONTEXT
+        // ----------------------------
+        // Store security info to avoid repeated API calls
+        // Note: SaveData has a size limit of approximately 0.5MB per call
+        // and is local to the device/browser profile
+        SaveData(
+            App,
+            "UserSecurityCache_" & Text(User().Email),
+            {
+                Email: User().Email,
+                Roles: gblUserRoles,
+                RoleFlags: Table(
+                    {Role: "Admin", HasAccess: gblIsAdmin},
+                    {Role: "Editor", HasAccess: gblIsEditor},
+                    {Role: "Reader", HasAccess: gblIsReader}
+                ),
+                Timestamp: Now()
+            }
+        );
+        
+
+        // STAGE 10: LOG ACCESS CHECK (OPTIONAL)
+        // ----------------------------------
+        // Record this security check for analytics
+        If(
+            !gblSecurityLogged,
+            Collect(
+                colRBACEvents,
+                {
+                    UserEmail: User().Email,
+                    Event: "SecurityCheck",
+                    RoleName: If(gblIsAdmin, "Admin", If(gblIsEditor, "Editor", If(gblIsReader, "Reader", "None"))),
+                    Result: gblIsAdmin || gblIsEditor || gblIsReader,
+                    Timestamp: Now()
+                }
+            );
+            Set(gblSecurityLogged, true)
+        );
+        
+
+        // STAGE 11: UPDATE SECURITY STATUS
+        // -----------------------------
+        // Mark security as loaded and reset flags
+        Set(gblSecurityNeedsRefresh, false);
+        Set(gblIsSecurityLoaded, true);
+        Set(gblSecurityLoading, false)
+    )
+});
+        </code>
+        
+        <div class="danger">
+            <strong>Security Caveat - Defense in Depth:</strong> Remember that front-end RBAC controls are primarily for user experience and should never be your only line of defense. Always implement proper back-end security at the data source level (SharePoint, SQL, etc.) to protect against potential bypass attempts. Canvas app formulas can be bypassed by determined users, so sensitive operations should always be validated at the server level as well.
+        </div>
+        
+        <h3>Step 4.4: Implement UI Visibility Controls</h3>
+        <p>Use the pre-computed flags to control UI element visibility:</p>
+        
+        <code>
+// Admin button - only visible to admins
+AdminButton.Visible: gblShowAdminFeatures;
+
+// Edit button - visible to editors and admins
+EditButton.Visible: gblShowEditorFeatures;
+
+// View details button - visible to all users with at least reader access
+ViewButton.Visible: gblShowReaderFeatures;
+
+// Form field display mode - edit for editors/admins, view for readers
+FormTitleField.DisplayMode: If(gblShowEditorFeatures, DisplayMode.Edit, DisplayMode.View);
+        </code>
+        
+        <div class="note">
+            <strong>Accessibility Tip:</strong> When hiding UI elements based on permissions, ensure you also provide clear messaging for screen readers. Add accessible labels to disabled buttons explaining why they're disabled (e.g., "Edit feature requires Editor permissions"). This improves the experience for users with screen readers.
+        </div>
+    </div>
+
+    <div class="section" id="silver-method">
+        <h2>Step 5: <span class="implementation-type silver">Silver Method</span> - Custom Connector Implementation</h2>
+        <p>The Silver method uses a custom connector to Microsoft Graph API, providing better performance and flexibility for apps with multiple roles and larger user bases.</p>
+        
+        <h3>Step 5.1: Register an Azure AD Application</h3>
+        <ol>
+            <li>Go to <strong>Azure Portal</strong> → <strong>Azure Active Directory</strong> → <strong>App registrations</strong></li>
+            <li>Click <strong>New registration</strong>
+                <ul>
+                    <li>Name: <strong>PowerApps-RBAC-Connector</strong></li>
+                    <li>Supported account types: <strong>Accounts in this organizational directory only</strong></li>
+                    <li>Redirect URI: Leave blank (we'll add later)</li>
+                </ul>
+            </li>
+            <li>After creation, note the <strong>Application (client) ID</strong></li>
+            <li>Go to <strong>API permissions</strong> → <strong>Add a permission</strong>
+                <ul>
+                    <li>Select <strong>Microsoft Graph</strong> → <strong>Delegated permissions</strong></li>
+                    <li>Add <strong>Group.Read.All</strong> permission</li>
+                </ul>
+            </li>
+            <li>Click <strong>Grant admin consent</strong></li>
+            <li>Go to <strong>Certificates & secrets</strong> → <strong>New client secret</strong>
+                <ul>
+                    <li>Description: <strong>Power Apps Connector</strong></li>
+                    <li>Expiration: Select appropriate duration (1 year, 2 years, etc.)</li>
+                </ul>
+            </li>
+            <li>Note down the generated <strong>client secret value</strong> (visible only once)</li>
+        </ol>
+        
+        <div class="warning">
+            <strong>Security Note:</strong> The client secret is highly sensitive and should be protected. When using OAuth 2.0 with Client ID and Client Secret for the custom connector, the Graph API calls are performed by the App Registration's identity (service principal) after the user authenticates to the connector. The delegated permissions allow the service principal to act on behalf of the authenticated user, respecting their access rights.
+        </div>
+        
+        <h3>Step 5.2: Create a Custom Connector</h3>
+        <ol>
+            <li>Go to <strong>Power Apps</strong> → <strong>Data</strong> → <strong>Custom connectors</strong></li>
+            <li>Click <strong>New custom connector</strong> → <strong>Create from blank</strong></li>
+            <li>Name: <strong>AzureAD Group Connector</strong></li>
+            <li>In <strong>General</strong> tab:
+                <ul>
+                    <li>Host: <strong>graph.microsoft.com</strong></li>
+                    <li>Base URL: <strong>/v1.0</strong></li>
+                </ul>
+            </li>
+            <li>In <strong>Security</strong> tab:
+                <ul>
+                    <li>Authentication type: <strong>OAuth 2.0</strong></li>
+                    <li>Identity provider: <strong>Azure Active Directory</strong></li>
+                    <li>Client id: <em>[Your App Registration Client ID]</em></li>
+                    <li>Client secret: <em>[Your App Registration Client Secret]</em></li>
+                    <li>Resource URL: <strong>https://graph.microsoft.com</strong></li>
+                </ul>
+            </li>
+            <li>In <strong>Definition</strong> tab, add a new action:
+                <ul>
+                    <li>Summary: <strong>Get User Group Memberships</strong></li>
+                    <li>Operation ID: <strong>IsUserInAnyGroup</strong></li>
+                    <li>Visibility: <strong>important</strong></li>
+                    <li>Method: <strong>GET</strong></li>
+                    <li>Path: <strong>/users/{userPrincipalName}/memberOf</strong></li>
+                    <li>Add parameter:
+                        <ul>
+                            <li>Name: <strong>userPrincipalName</strong></li>
+                            <li>Type: <strong>string</strong></li>
+                            <li>Location: <strong>path</strong></li>
+                            <li>Required: <strong>Yes</strong></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>In <strong>Test</strong> tab, create a connection and test the action</li>
+            <li>Click <strong>Create connector</strong></li>
+        </ol>
+        
+        <h3>Step 5.3: Update App OnStart and Security Loading</h3>
+        <p>Use the same OnStart code as in the Bronze method, but update the LoadUserSecurity function:</p>
+        
+        <code>
+// Silver Method LoadUserSecurity function
+Set(LoadUserSecurity, () => {
+    // Prevent redundant calls
+    If(
+        !gblSecurityLoading,
+        Set(gblSecurityLoading, true);
+        
+        // Get all security group IDs from configuration
+        Set(varSecurityGroupIDs, Filter(AppConfig, StartsWith(Title, "SecurityGroup")).Value);
+        
+        // Use custom connector to get user's group memberships
+        Set(locUserGroupsResponse, IfError(
+            AzureGroupConnector.IsUserInAnyGroup(User().Email).value,
+            Notify("Error connecting to Azure AD. Using cached permissions if available.");
+            Set(gblInitError, true);
+            []
+        ));
+        
+        // Extract just the IDs from the group objects returned by Graph API
+        Set(locUserGroupIDs, ForAll(locUserGroupsResponse, id));
+        
+        // Check user's access against all configured groups
+        Set(gblUserRoles, ForAll(
+            Filter(AppConfig, StartsWith(Title, "SecurityGroup")),
+            {
+                roleName: Title,
+                groupId: Value,
+                hasAccess: Value in locUserGroupIDs
+            }
+        ));
+        
+        // Set common role flags
+        Set(gblIsAdmin, !IsEmpty(Filter(gblUserRoles, roleName = "SecurityGroupAdmin" && hasAccess)));
+        Set(gblIsEditor, !IsEmpty(Filter(gblUserRoles, roleName = "SecurityGroupEditor" && hasAccess)));
+        Set(gblIsReader, !IsEmpty(Filter(gblUserRoles, roleName = "SecurityGroupReader" && hasAccess)));
+        
+        // Update pre-computed visibility flags
+        Set(gblShowAdminFeatures, gblIsAdmin);
+        Set(gblShowEditorFeatures, gblIsEditor || gblIsAdmin);
+        Set(gblShowReaderFeatures, gblIsReader || gblIsEditor || gblIsAdmin);
+        
+        // Cache user roles
+        SaveData(
+            App,
+            "UserSecurityCache_" & Text(User().Email),
+            {
+                Email: User().Email,
+                Roles: gblUserRoles,
+                RoleFlags: Table(
+                    {Role: "Admin", HasAccess: gblIsAdmin},
+                    {Role: "Editor", HasAccess: gblIsEditor},
+                    {Role: "Reader", HasAccess: gblIsReader}
+                ),
+                Timestamp: Now()
+            }
+        );
+        
+        // Log access check
+        If(
+            !gblSecurityLogged,
+            Collect(
+                colRBACEvents,
+                {
+                    UserEmail: User().Email,
+                    Event: "SecurityCheck",
+                    RoleName: If(gblIsAdmin, "Admin", If(gblIsEditor, "Editor", If(gblIsReader, "Reader", "None"))),
+                    Result: gblIsAdmin || gblIsEditor || gblIsReader,
+                    Timestamp: Now()
+                }
+            );
+            Set(gblSecurityLogged, true)
+        );
+        
+        // Mark security as loaded
+        Set(gblSecurityNeedsRefresh, false);
+        Set(gblIsSecurityLoaded, true);
+        Set(gblSecurityLoading, false)
+    )
+});
+        </code>
+
+        <div class="note">
+            <strong>Microsoft Graph API Response Format:</strong> The Microsoft Graph API returns group objects containing multiple properties (id, displayName, etc.), not just IDs. The above code extracts just the 'id' property from each group object in the response to create a list of IDs that can be compared against the stored security group IDs.
+        </div>
+    </div>
+
+    <div class="section" id="gold-method">
+        <h2>Step 6: <span class="implementation-type gold">Gold Method</span> - Advanced Implementation</h2>
+        <p>The Gold method builds on the Silver method but adds support for nested groups, role inheritance, and advanced performance optimizations for enterprise-scale applications.</p>
+        
+        <div class="warning">
+            <strong>Security Caveat - Defense in Depth:</strong> Remember that front-end RBAC controls are primarily for user experience and should never be your only line of defense. Always implement proper back-end security at the data source level (Dataverse, SharePoint, etc.) to protect against potential bypass attempts. Canvas app formulas can be bypassed by determined users through various means, so sensitive operations should always be validated at the server level as well.
+        </div>
+        
+        <h3>Step 6.1: Enhance Custom Connector for Nested Groups</h3>
+        <ol>
+            <li>In your custom connector, add a new action:
+                <ul>
+                    <li>Summary: <strong>Advanced Membership Check</strong></li>
+                    <li>Operation ID: <strong>AdvancedMembershipCheck</strong></li>
+                    <li>Visibility: <strong>important</strong></li>
+                    <li>Method: <strong>GET</strong></li>
+                    <li>Path: <strong>/users/{userPrincipalName}/transitiveMemberOf</strong></li>
+                    <li>Add parameter:
+                        <ul>
+                            <li>Name: <strong>userPrincipalName</strong></li>
+                            <li>Type: <strong>string</strong></li>
+                            <li>Location: <strong>path</strong></li>
+                            <li>Required: <strong>Yes</strong></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>Test the new action to ensure it returns transitive group memberships</li>
+            <li>Update your connector</li>
+        </ol>
+        
+        <div class="note">
+            <strong>Handling Large Group Memberships:</strong> For users who belong to hundreds or thousands of groups, the Graph API may hit throttling limits or return paginated results. To handle this, you may need to implement paging logic in your connector or set a top parameter to limit results. Consider adding logic to handle continuation tokens in the response headers if you need to support users with extremely large group memberships.
+        </div>
+        
+        <h3>Step 6.2: Implement Enhanced Security Loading</h3>
+        <p>Update the LoadUserSecurity function for advanced scenarios:</p>
+        
+        <code>
+// STAGE 1: FUNCTION DEFINITION
+// --------------------------
+// Gold Method LoadUserSecurity function with advanced features
+Set(LoadUserSecurity, () => {
+    
+
+    // STAGE 2: PREVENT DUPLICATE CALLS
+    // -----------------------------
+    // Only proceed if not already loading security
+    If(
+        !gblSecurityLoading,
+        
+
+        // STAGE 3: SET LOADING FLAG
+        // -----------------------
+        Set(gblSecurityLoading, true);
+        
+
+        // STAGE 4: GET CONFIGURATION
+        // -----------------------
+        // Get all security group IDs from configuration
+        Set(varSecurityGroupIDs, Filter(AppConfig, StartsWith(Title, "SecurityGroup")).Value);
+        
+
+        // Get cache duration from environment variable or use default
+        Set(
+            gblRoleCacheDuration, 
+            If(
+                !IsBlank(LookUp(AppConfig, Title = "RoleCacheDurationHours").Value),
+                Value(LookUp(AppConfig, Title = "RoleCacheDurationHours").Value),
+                4
+            )
+        );
+        
+
+        // STAGE 5: GET TRANSITIVE GROUP MEMBERSHIPS
+        // --------------------------------------
+        // Use advanced connector for nested/transitive group memberships
+        Set(locAdvancedMembership, IfError(
+            AzureGroupConnector.AdvancedMembershipCheck(User().Email).value,
+            Notify("Error connecting to Azure AD. Using cached permissions if available.");
+            Set(gblInitError, true);
+            []
+        ));
+        
+
+        // STAGE 6: EXTRACT GROUP IDs
+        // -----------------------
+        // Get just the IDs from the membership results for easier comparison
+        Set(locMembershipIDs, ForAll(locAdvancedMembership, id));
+        
+
+        // STAGE 7: DETERMINE ROLE ACCESS
+        // ---------------------------
+        // Check each configured security group against user's memberships
+        Set(gblUserRoles, ForAll(
+            Filter(AppConfig, StartsWith(Title, "SecurityGroup")),
+            {
+                roleName: Title,
+                groupId: Value,
+                hasAccess: Value in locMembershipIDs
+            }
+        ));
+        
+
+        // STAGE 8: SET COMMON ROLE FLAGS
+        // ---------------------------
+        // Set flags for the main roles used throughout the app
+        Set(gblIsAdmin, !IsEmpty(Filter(gblUserRoles, roleName = "SecurityGroupAdmin" && hasAccess)));
+        Set(gblIsEditor, !IsEmpty(Filter(gblUserRoles, roleName = "SecurityGroupEditor" && hasAccess)));
+        Set(gblIsReader, !IsEmpty(Filter(gblUserRoles, roleName = "SecurityGroupReader" && hasAccess)));
+        
+
+        // STAGE 9: COMPUTE VISIBILITY FLAGS
+        // -----------------------------
+        // Set derived visibility flags with role inheritance
+        Set(gblShowAdminFeatures, gblIsAdmin);
+        Set(gblShowEditorFeatures, gblIsEditor || gblIsAdmin);
+        Set(gblShowReaderFeatures, gblIsReader || gblIsEditor || gblIsAdmin);
+        
+
+        // STAGE 10: CACHE SECURITY CONTEXT
+        // ----------------------------
+        // Save security info with version tracking for cache invalidation
+        Set(gblAppVersionFromConfig, LookUp(AppConfig, Title = "AppVersion").Value);
+        SaveData(
+            App,
+            "UserSecurityCache_" & Text(User().Email),
+            {
+                Email: User().Email,
+                Roles: gblUserRoles,
+                RoleFlags: Table(
+                    {Role: "Admin", HasAccess: gblIsAdmin},
+                    {Role: "Editor", HasAccess: gblIsEditor},
+                    {Role: "Reader", HasAccess: gblIsReader}
+                ),
+                Timestamp: Now(),
+                AppVersion: gblAppVersionFromConfig
+            }
+        );
+        
+
+        // STAGE 11: LOG ACCESS CHECK
+        // -----------------------
+        // Record security check with detailed information
+        If(
+            !gblSecurityLogged && !IsEmpty(colRBACEvents),
+            
+
+            // Log to in-memory collection for current session
+            Collect(
+                colRBACEvents,
+                {
+                    UserEmail: User().Email,
+                    Event: "SecurityCheck",
+                    RoleName: If(gblIsAdmin, "Admin", If(gblIsEditor, "Editor", If(gblIsReader, "Reader", "None"))),
+                    Result: gblIsAdmin || gblIsEditor || gblIsReader,
+                    Timestamp: Now(),
+                    Details: "User is member of " & CountRows(locAdvancedMembership) & " groups"
+                }
+            );
+            
+
+            // Also log to Dataverse for permanent audit records
+            If(
+                gblUseDataverseAuditing,
+                Patch(
+                    'RBAC Audit Logs',
+                    Defaults('RBAC Audit Logs'),
+                    {
+                        UserEmail: User().Email,
+                        EventType: "SecurityCheck",
+                        RoleName: If(gblIsAdmin, "Admin", If(gblIsEditor, "Editor", If(gblIsReader, "Reader", "None"))),
+                        Result: gblIsAdmin || gblIsEditor || gblIsAdmin,
+                        EventTimestamp: Now(),
+                        Details: "User is member of " & CountRows(locAdvancedMembership) & " groups",
+                        AppName: gblAppName
+                    }
+                )
+            );
+            
+
+            Set(gblSecurityLogged, true)
+        );
+        
+
+        // STAGE 12: UPDATE APP NAVIGATION (OPTIONAL)
+        // --------------------------------------
+        // Reconfigure app navigation menu based on role changes
+        // This function would typically re-filter a collection that populates
+        // a navigation menu component based on the newly loaded user roles
+        If(IsFunction(UpdateAppNavigation), UpdateAppNavigation());
+        
+
+        // STAGE 13: UPDATE SECURITY STATUS
+        // ----------------------------
+        // Mark security loading as complete
+        Set(gblSecurityNeedsRefresh, false);
+        Set(gblIsSecurityLoaded, true);
+        Set(gblSecurityLoading, false)
+    )
+});
+        </code>
+        
+        <h3>Step 6.3: Create Reusable RBAC Component</h3>
+        <p>Create a component for consistent RBAC checks across your app:</p>
+        
+        <div class="note">
+            <strong>Component Implementation Note:</strong> The following is a conceptual implementation of an RBAC component. In practice, you'll need to create a custom component in Power Apps Studio and configure its properties through the UI. The code below illustrates the logic and behavior that should be implemented in the component.
+        </div>
+        
+        <p>First, create a new component in Power Apps Studio. Name it "RBACControl" and add the following input properties through the Components panel:</p>
+        
+        <ul>
+            <li><strong>RequiredRole</strong> (Text) - Default: "Reader"</li>
+            <li><strong>ControlType</strong> (Text) - Default: "Visibility"</li>
+            <li><strong>ShowLoading</strong> (Boolean) - Default: false</li>
+            <li><strong>FallbackAction</strong> (Text) - Default: "Hide"</li>
+            <li><strong>RedirectScreen</strong> (Screen) - Optional</li>
+        </ul>
+        
+        <p>Add an output property:</p>
+        <ul>
+            <li><strong>HasAccess</strong> (Boolean) - Whether the user has the required role</li>
+        </ul>
+        
+        <p>Then add these controls to your component:</p>
+        
+        <code>
+// Add a Timer control to the component
+tmrRoleCheck.Duration: 100
+tmrRoleCheck.Repeat: false
+tmrRoleCheck.AutoStart: true
+tmrRoleCheck.Visible: false
+
+// Timer's OnTimerEnd property:
+tmrRoleCheck.OnTimerEnd:
+If(
+    !locRoleChecked,
+    
+    // MARK AS CHECKED
+    UpdateContext({locRoleChecked: true});
+    
+    // DETERMINE ACCESS
+    If(
+        gblUICachingReady,
+        
+        // USE CACHED SECURITY
+        UpdateContext({
+            locHasAccess: Switch(
+                Self.RequiredRole,
+                "Admin", gblShowAdminFeatures,
+                "Editor", gblShowEditorFeatures,
+                "Reader", gblShowReaderFeatures,
+                // For custom roles, check the detailed roles collection
+                !IsEmpty(
+                    Filter(
+                        gblUserRoles, 
+                        // Note: roleName in the collection has the "SecurityGroup" prefix
+                        roleName = "SecurityGroup" & Self.RequiredRole && 
+                        hasAccess = true
+                    )
+                )
+            )
+        }),
+        
+        // NO CACHE AVAILABLE
+        UpdateContext({locHasAccess: false})
+    );
+    
+    // UPDATE OUTPUT PROPERTY
+    UpdateContext({HasAccess: locHasAccess});
+    
+    // APPLY ACCESS CONTROL
+    Switch(
+        Self.ControlType,
+        // For visibility controls
+        "Visibility", UpdateContext({locVisible: locHasAccess}),
+        
+        // For enabled/disabled controls
+        "Enable", UpdateContext({locEnabled: locHasAccess}),
+        
+        // For navigation items
+        "NavItem", UpdateContext({locVisible: locHasAccess}),
+        
+        // For entire screens
+        "Screen", 
+            If(
+                !locHasAccess, 
+                Switch(
+                    Self.FallbackAction,
+                    // Redirect to another screen
+                    "Redirect", Navigate(Self.RedirectScreen, ScreenTransition.None),
+                    
+                    // Show notification and redirect
+                    "Notify", 
+                        Notify("You don't have " & Self.RequiredRole & " access to this screen");
+                        If(
+                            !IsBlank(Self.RedirectScreen),
+                            Navigate(Self.RedirectScreen, ScreenTransition.None)
+                        ),
+                    
+                    // Show access request dialog          
+                    "RequestAccess", UpdateContext({locShowRequestAccess: true})
+                )
+            )
+    )
+)
+
+// Add a dialog container for access requests
+conRequestAccess.Visible: locShowRequestAccess
+
+// Inside the dialog, add:
+lblAccessTitle.Text: "Access Required"
+lblAccessMessage.Text: "You need " & Self.RequiredRole & " access to use this feature."
+btnRequestAccess.Text: "Request Access"
+btnRequestAccess.OnSelect: 
+    Navigate(AccessRequestScreen, {requestedRole: Self.RequiredRole});
+    UpdateContext({locShowRequestAccess: false})
+
+btnCancelRequest.Text: "Cancel"
+btnCancelRequest.OnSelect: UpdateContext({locShowRequestAccess: false})
+        </code>
+        
+        <div class="note">
+            <strong>Component Implementation Clarification:</strong> This RBAC component is primarily a non-visual logic provider that outputs access decisions through its <code>HasAccess</code> property. While it contains internal variables like <code>locVisible</code> and <code>locEnabled</code>, these are intended to be used by specific types of implementations or extended in more complex scenarios. The primary integration point is the <code>HasAccess</code> output property that external controls use to determine their visibility or enabled state.
+        </div>
+
+        <div class="warning">
+            <strong>Component Usage Warning:</strong> While this RBAC component provides a convenient way to control UI visibility, remember that it's still a client-side control that should never be the only security mechanism in your app. Always pair it with proper backend security, as Canvas app formulas (including components) can potentially be bypassed by determined users.
+        </div>
+        
+        <h3>Step 6.4: Using the RBAC Component</h3>
+        <p>Now you can add the component throughout your app. Here are some examples of how to use it:</p>
+        
+        <code>
+// EXAMPLE 1: CONTROL BUTTON VISIBILITY
+// ---------------------------------
+// Add the RBAC component next to your button
+RBACControl1.RequiredRole: "Admin"
+RBACControl1.ControlType: "Visibility"
+
+// Then set the button's Visible property
+DeleteButton.Visible: RBACControl1.HasAccess
+
+// EXAMPLE 2: CONTROL BUTTON ENABLED STATE
+// -----------------------------------
+// Add the RBAC component next to your edit button
+RBACControl2.RequiredRole: "Editor"
+RBACControl2.ControlType: "Enable"
+
+// Then set the button's DisplayMode property
+EditButton.DisplayMode: If(RBACControl2.HasAccess, 
+                          DisplayMode.Edit, 
+                          DisplayMode.Disabled)
+
+// EXAMPLE 3: PROTECT ENTIRE SCREENS
+// -----------------------------
+// Add the RBAC component to the admin screen
+RBACControl3.RequiredRole: "Admin"
+RBACControl3.ControlType: "Screen"
+RBACControl3.FallbackAction: "Redirect"
+RBACControl3.RedirectScreen: HomeScreen
+
+// Add to the screen's OnVisible property
+AdminScreen.OnVisible:
+// Only load admin-specific data if user has access
+If(
+    RBACControl3.HasAccess,
+    LoadAdminData()
+)
+        </code>
+        
+        <div class="note">
+            <strong>Component Usage Note:</strong> The examples above show the conceptual way to use the component. For a real implementation, you might create wrapper functions or helper components to simplify usage. You could also create a set of component variants pre-configured for common use cases like "AdminOnly," "EditorOrAdmin," etc.
+        </div>
+    </div>
+
+    <div class="section" id="dataverse-security">
+        <h2>Step 7: Aligning with Dataverse Security</h2>
+        <p>If your app uses Dataverse, you should align your Canvas app UI security with Dataverse backend security.</p>
+        
+        <div class="note">
+            <strong>Important:</strong> Dataverse provides robust data-level security but does NOT automatically control UI elements in Canvas apps. You must implement frontend RBAC even when using Dataverse.
+        </div>
+        
+        <h3>Step 7.1: Mapping Dataverse Security Roles to Azure AD Groups</h3>
+        <p>Create a consistent mapping between Dataverse security roles and Azure AD security groups:</p>
+        
+        <code>
+// In your AppConfig:
+"SecurityGroupAdmin" → corresponds to Dataverse "System Administrator" role
+"SecurityGroupEditor" → corresponds to Dataverse "Basic User" with Write privileges
+"SecurityGroupReader" → corresponds to Dataverse "Basic User" with Read-only access
+        </code>
+        
+        <table>
+            <tr>
+                <th>Azure AD Security Group</th>
+                <th>Canvas App Role</th>
+                <th>Dataverse Security Role</th>
+                <th>Permissions</th>
+            </tr>
+            <tr>
+                <td>App-Admin-Group</td>
+                <td>Admin</td>
+                <td>System Administrator</td>
+                <td>Full create, read, update, delete access to all entities</td>
+            </tr>
+            <tr>
+                <td>App-Editor-Group</td>
+                <td>Editor</td>
+                <td>Basic User</td>
+                <td>Create, read, update access to app-specific entities</td>
+            </tr>
+            <tr>
+                <td>App-Reader-Group</td>
+                <td>Reader</td>
+                <td>Basic User (restricted)</td>
+                <td>Read-only access to app-specific entities</td>
+            </tr>
+        </table>
+
+        <h3>Step 7.2: Querying Dataverse Security Roles (Optional)</h3>
+        <p>For a unified experience, you can query the user's Dataverse security roles directly. This can be done in two ways:</p>
+
+        <h4>Option A: Using a Custom Connector to the Dataverse Web API</h4>
+        <p>Create a custom connector to the Dataverse API that can query the user's security roles:</p>
+
+        <code>
+// Create a custom connector that calls:
+// {org-url}/api/data/v9.1/systemusers({user-id})/systemuserroles_association?$select=name
+
+// Then in your app:
+Set(gblDataverseRoles, DataverseConnector.GetUserRoles(User().Email).value);
+Set(gblIsDataverseAdmin, "System Administrator" in gblDataverseRoles);
+
+// Combine with Azure AD roles
+Set(gblShowAdminFeatures, gblIsAdmin || gblIsDataverseAdmin);
+        </code>
+
+        <div class="note">
+            <strong>Implementation Note:</strong> Querying the systemuserroles_association requires administrative permissions. In many cases, it's simpler to keep roles synchronized between Azure AD and Dataverse rather than trying to query Dataverse roles directly from a Canvas app.
+        </div>
+
+        <h4>Option B: Using Power Automate Flow for Role Checking</h4>
+        <p>An alternative approach is to create a Power Automate flow that checks Dataverse roles and can be called from the Canvas app:</p>
+
+        <ol>
+            <li>Create a flow that accepts a user email as input</li>
+            <li>Use the "List Rows" action to query the systemuserroles_association</li>
+            <li>Return the roles as an array</li>
+            <li>Call this flow from your Canvas app</li>
+        </ol>
+
+        <h3>Step 7.3: Security-Aware Form Controls</h3>
+        <p>Ensure forms respect both frontend permissions and Dataverse field security:</p>
+
+        <code>
+// For each field in your form
+SomeField.DisplayMode: If(
+    // Check if user has edit permissions in frontend RBAC
+    gblShowEditorFeatures,
+    DisplayMode.Edit,
+    DisplayMode.View
+);
+
+// Note: Directly checking field-level security in Dataverse is not available through a simple
+// Canvas app function. For applications requiring this level of granularity,
+// consider implementing a Power Automate flow or custom connector that can query 
+// the Dataverse API for field-level permissions.
+        </code>
+    </div>
+
+    <div class="section" id="role-management">
+        <h2>Step 8: Dynamic Role Management</h2>
+        <p>Enable administrators to manage roles dynamically from within the app:</p>
+
+        <h3>Step 8.1: Create Role Management Screen</h3>
+        <code>
+// In a new admin screen, add a gallery:
+RoleManagementGallery.Items: 
+ForAll(
+    Filter(AppConfig, StartsWith(Title, "SecurityGroup")),
+    {
+        RoleName: Right(Title, Len(Title) - Len("SecurityGroup")),
+        GroupID: Value,
+        EditMode: false
+    }
+);
+
+// Inside the `RoleManagementGallery` template, add:
+// 1. For Edit Mode:
+txtGroupID_Edit.Default: ThisItem.GroupID
+txtGroupID_Edit.Visible: ThisItem.EditMode
+txtGroupID_Edit.HintText: "Enter new Group ID"
+
+btnSave_Edit.Text: "Save"
+btnSave_Edit.Visible: ThisItem.EditMode
+btnSave_Edit.OnSelect: 
+    UpdateRoleConfiguration(
+        {
+            RoleName: ThisItem.RoleName,
+            GroupID: txtGroupID_Edit.Text
+        }
+    );
+    Patch(
+        RoleManagementGallery.AllItems,
+        ThisItem,
+        {EditMode: false}
+    )
+
+btnCancel_Edit.Text: "Cancel"
+btnCancel_Edit.Visible: ThisItem.EditMode
+btnCancel_Edit.OnSelect:
+    Patch(
+        RoleManagementGallery.AllItems,
+        ThisItem,
+        {EditMode: false}
+    )
+
+// 2. For View Mode:
+lblRoleName_View.Text: ThisItem.RoleName
+lblRoleName_View.Visible: !ThisItem.EditMode
+
+lblGroupID_View.Text: ThisItem.GroupID
+lblGroupID_View.Visible: !ThisItem.EditMode
+
+btnEdit_View.Text: "Edit"
+btnEdit_View.Visible: !ThisItem.EditMode
+btnEdit_View.OnSelect:
+    Patch(
+        RoleManagementGallery.AllItems,
+        ThisItem,
+        {EditMode: true}
+    )
+        </code>
+
+        <h3>Step 8.2: Create Role Update Function</h3>
+        <code>
+// Function to update role configuration
+Set(UpdateRoleConfiguration, (roleUpdate) => {
+    // Only admins can update roles
+    If(
+        gblShowAdminFeatures,
+        // Update the configuration
+        Patch(
+            AppConfig,
+            LookUp(AppConfig, Title = "SecurityGroup" & roleUpdate.RoleName),
+            {Value: roleUpdate.GroupID}
+        );
+        
+        // Update last role change timestamp
+        Patch(
+            AppConfig,
+            LookUp(AppConfig, Title = "LastRoleUpdate"),
+            {Value: Text(Now(), DateTimeFormat.UTC)}
+        );
+        
+        // Force refresh of the admin's security context
+        Set(gblSecurityNeedsRefresh, true);
+        LoadUserSecurity();
+        
+        // Log the role update
+        Collect(
+            colRBACEvents,
+            {
+                UserEmail: User().Email,
+                Event: "RoleUpdate",
+                RoleName: roleUpdate.RoleName,
+                Result: true,
+                Timestamp: Now(),
+                Details: "Updated Group ID to " & roleUpdate.GroupID
+            }
+        );
+        
+        Notify("Role configuration updated successfully");
+        true,
+        
+        // Not an admin
+        Notify("You don't have permission to update role configurations");
+        false
+    )
+});
+        </code>
+    </div>
+
+    <div class="section" id="access-requests">
+        <h2>Step 9: Self-Service Access Requests</h2>
+        <p>Implement a workflow for users to request access to roles they don't currently have:</p>
+
+        <h3>Step 9.1: Create Access Request Screen</h3>
+        <code>
+// In a new screen, add a form:
+AccessRequestForm.Fields:
+Table(
+    {
+        DataField: "RequestedRole",
+        DisplayName: "Role",
+        Control: RequestRoleDropdown
+    },
+    {
+        DataField: "Justification",
+        DisplayName: "Business Justification",
+        Control: JustificationInput
+    }
+);
+
+// Dropdown for role selection
+RequestRoleDropdown.Items:
+Filter(
+    Table(
+        {Value: "Admin", Label: "Administrator"},
+        {Value: "Editor", Label: "Content Editor"},
+        {Value: "Reader", Label: "Basic Access"}
+    ),
+    // Only show roles the user doesn't already have
+    !(Value = "Admin" && gblIsAdmin) &&
+    !(Value = "Editor" && (gblIsEditor || gblIsAdmin)) && // Account for inheritance
+    !(Value = "Reader" && (gblIsReader || gblIsEditor || gblIsAdmin)) // Account for inheritance
+);
+
+// Submit button
+SubmitRequestButton.OnSelect:
+// Prevent request flooding
+If(
+    CountRows(Filter(colAccessRequests, UserEmail = User().Email && Status = "Pending")) >= 3,
+    Notify("You have too many pending requests. Please wait for them to be processed."),
+    
+    // Submit the request
+    Collect(
+        colAccessRequests,
+        {
+            UserEmail: User().Email,
+            UserName: User().FullName,
+            RequestedRole: RequestRoleDropdown.Selected.Value,
+            Status: "Pending",
+            Justification: JustificationInput.Text,
+            SubmittedDate: Now()
+        }
+    );
+    
+    // Trigger Power Automate flow
+    PowerAutomate.Run(
+        "AccessRequestFlow",
+        {
+            userEmail: User().Email,
+            userName: User().FullName,
+            requestedRole: RequestRoleDropdown.Selected.Value,
+            justification: JustificationInput.Text
+        }
+    );
+    
+    Notify("Request submitted successfully. You'll be notified when it's processed.");
+    Navigate(HomeScreen)
+);
+        </code>
+
+        <h3>Step 9.2: Create Power Automate Flow for Approvals</h3>
+        <ol>
+            <li>Create a new flow triggered when the Power Apps action is run</li>
+            <li>Add an approval action (Approvals connector)</li>
+            <li>Add conditions for approval/rejection handling</li>
+            <li>For approved requests, add the user to the appropriate Azure AD group</li>
+            <li>Send email notifications for approval status</li>
+        </ol>
+    </div>
+
+    <div class="section" id="rbac-analytics">
+        <h2>Step 10: RBAC Analytics and Monitoring</h2>
+        <p>Implement analytics to track security-related events and monitor access patterns:</p>
+
+        <h3>Step 10.1: Create RBAC Audit Structure</h3>
+        <div class="note">
+            <strong>Enterprise Audit Recommendation:</strong> For production environments, particularly in regulated industries or enterprise applications, implement RBAC auditing in a dedicated Dataverse table rather than just an in-memory collection. This ensures audit logs persist across all user sessions and can be analyzed for security patterns or compliance reporting.
+        </div>
+
+        <h4>Option A: In-Memory Collection (Small Scale)</h4>
+        <code>
+// Define the RBAC events collection structure
+ClearCollect(
+    colRBACEvents,
+    {
+        UserEmail: "",
+        Event: "",
+        RoleName: "",
+        Result: false,
+        Timestamp: Now(),
+        Details: ""
+    }
+);
+
+// Example logging calls throughout the app:
+Collect(
+    colRBACEvents,
+    {
+        UserEmail: User().Email,
+        Event: "AccessCheck",
+        RoleName: "Admin",
+        Result: gblIsAdmin,
+        Timestamp: Now(),
+        Details: "Checking admin access for " & App.ActiveScreen.Name
+    }
+);
+        </code>
+
+        <h4>Option B: Dataverse Audit Table (Enterprise Scale)</h4>
+        <ol>
+            <li>Create a new Dataverse table named "RBAC Audit Logs" with these columns:
+                <ul>
+                    <li>UserEmail (Single line of text)</li>
+                    <li>EventType (Choice: AccessCheck, RoleUpdate, AccessRequest, etc.)</li>
+                    <li>RoleName (Single line of text)</li>
+                    <li>Result (Boolean)</li>
+                    <li>EventTimestamp (Date and Time)</li>
+                    <li>Details (Multiple lines of text)</li>
+                    <li>AppName (Single line of text)</li>
+                    <li>ClientIP (Single line of text) - can be populated using the Power Apps Client Info component</li>
+                </ul>
+            </li>
+            <li>Set appropriate security roles for this table (typically only admins can view)</li>
+            <li>Implement audit logging in your app:</li>
+        </ol>
+
+        <code>
+// Log security events to Dataverse
+Patch(
+    'RBAC Audit Logs',
+    Defaults('RBAC Audit Logs'),
+    {
+        UserEmail: User().Email,
+        EventType: "AccessCheck",
+        RoleName: "Admin",
+        Result: gblIsAdmin,
+        EventTimestamp: Now(),
+        Details: "User attempted to access " & App.ActiveScreen.Name,
+        AppName: gblAppName
+    }
+);
+        </code>
+
+        <p>For high-volume scenarios, consider batching audit logs using a Flow triggered periodically.</p>
+
+        <h3>Step 10.2: Create RBAC Dashboard</h3>
+        <p>Build a dashboard for administrators to monitor access patterns:</p>
+
+        <div class="warning">
+            <strong>Security Consideration:</strong> Ensure that the RBAC Dashboard itself is properly secured and only accessible to administrators. The dashboard contains sensitive security information that should not be visible to regular users.
+        </div>
+
+        <code>
+// In an admin dashboard screen - only visible if gblShowAdminFeatures is true
+DashboardTimePeriodDropdown.Items:
+Table(
+    {Value: "24h", Label: "Last 24 Hours"},
+    {Value: "7d", Label: "Last 7 Days"},
+    {Value: "30d", Label: "Last 30 Days"}
+);
+
+// Filter events based on selected time period
+Set(
+    locFilteredEvents,
+    Filter(
+        'RBAC Audit Logs',  // Use either in-memory collection or Dataverse table
+        EventTimestamp >= DateAdd(
+            Now(), 
+            Switch(
+                DashboardTimePeriodDropdown.Selected.Value,
+                "24h", -24,
+                "7d", -7,
+                "30d", -30,
+                -7
+            ),
+            Switch(
+                DashboardTimePeriodDropdown.Selected.Value,
+                "24h", TimeUnit.Hours,
+                "7d", TimeUnit.Days,
+                "30d", TimeUnit.Days,
+                TimeUnit.Days
+            )
+        )
+    )
+);
+
+// Create charts using the filtered data
+AccessResultsChart.Items:
+GroupBy(
+    locFilteredEvents,
+    "Result",
+    "Count", CountRows
+);
+
+EventTypeChart.Items:
+GroupBy(
+    locFilteredEvents,
+    "EventType",
+    "Count", CountRows
+);
+
+UserAccessChart.Items:
+FirstN(
+    Sort(
+        GroupBy(
+            Filter(locFilteredEvents, EventType = "AccessCheck" && Result = false),
+            "UserEmail",
+            "Count", CountRows
+        ),
+        Count,
+        Descending
+    ),
+    10
+);
+
+// Export to Excel button
+ExportToExcelButton.OnSelect:
+// Add confirmation dialog before export
+Set(gblShowExportConfirmation, true);
+
+// Confirmation dialog
+ConfirmationDialog.Visible: gblShowExportConfirmation;
+ConfirmationDialog.OnAccept:
+Set(gblShowExportConfirmation, false);
+Set(gblExportInProgress, true);
+
+// Log the export action for audit purposes
+Patch(
+    'RBAC Audit Logs',
+    Defaults('RBAC Audit Logs'),
+    {
+        UserEmail: User().Email,
+        EventType: "AuditExport",
+        RoleName: "Admin",
+        Result: true,
+        EventTimestamp: Now(),
+        Details: "Exported RBAC audit logs for period: " & DashboardTimePeriodDropdown.Selected.Label,
+        AppName: gblAppName
+    }
+);
+
+// Export the data using a Power Automate flow
+// Note: Office365.ExportToExcel is not a standard Power Fx function
+Set(
+    varExportResult,
+    PowerAutomate.Run(
+        "ExportRBACLogsToExcel", 
+        {
+            data: JSON(locFilteredEvents),
+            filename: "RBAC_Audit_" & Text(Now(), "yyyyMMdd_hhmmss"),
+            userEmail: User().Email
+        }
+    )
+);
+
+Set(gblExportInProgress, false);
+If(
+    varExportResult.Success,
+    Notify("Export completed successfully. Check your email for the download link."),
+    Notify("Export failed: " & varExportResult.Message)
+);
+        </code>
+    </div>
+
+    <div class="section" id="testing">
+        <h2>Step 11: Testing and Validation</h2>
+
+        <h3>Step 11.1: Testing Checklist</h3>
+        <p>Verify your RBAC implementation with this comprehensive checklist:</p>
+
+        <ul>
+            <li>Create test users for each role combination</li>
+            <li>Verify app startup behavior and performance</li>
+            <li>Test caching behavior (app restart, browser refresh)</li>
+            <li>Validate all UI elements respect role permissions</li>
+            <li>Test role changes (adding/removing users from security groups)</li>
+            <li>Verify dynamic role management functionality</li>
+            <li>Test access request workflow end-to-end</li>
+            <li>Validate analytics and reporting accuracy</li>
+        </ul>
+
+        <h3>Step 11.2: Performance Testing</h3>
+        <p>For large-scale deployments, conduct performance testing:</p>
+
+        <ul>
+            <li>Measure app startup time with and without security caching</li>
+            <li>Test with users who are members of many Azure AD groups</li>
+            <li>Verify behavior when Azure AD API is slow or unavailable</li>
+            <li>Monitor for API throttling during peak usage</li>
+        </ul>
+    </div>
+
+    <div class="section" id="troubleshooting">
+        <h2>Step 12: Troubleshooting Guide</h2>
+
+        <h3>Common Issues and Solutions</h3>
+        <table>
+            <tr>
+                <th>Issue</th>
+                <th>Possible Cause</th>
+                <th>Solution</th>
+            </tr>
+            <tr>
+                <td>Security group check always fails</td>
+                <td>Incorrect Group Object ID</td>
+                <td>Verify the Object ID in AppConfig against Azure portal</td>
+            </tr>
+            <tr>
+                <td>Slow app startup time</td>
+                <td>Security check in OnStart blocking UI rendering</td>
+                <td>Implement deferred security loading with Timer control</td>
+            </tr>
+            <tr>
+                <td>Custom connector fails</td>
+                <td>Missing API permissions or admin consent</td>
+                <td>Check API permissions in Azure AD and ensure admin consent is granted</td>
+            </tr>
+            <tr>
+                <td>UI elements visible despite lacking permissions</td>
+                <td>Visibility flags not properly set or checked</td>
+                <td>Use RBACControl component consistently across all secured elements</td>
+            </tr>
+            <tr>
+                <td>Access stops working after role changes</td>
+                <td>Cached security context is outdated</td>
+                <td>Implement version-based cache invalidation with LastRoleUpdate</td>
+            </tr>
+            <tr>
+                <td>RBAC doesn't align with Dataverse security</td>
+                <td>Mismatched role mappings</td>
+                <td>Ensure consistent mapping between Azure AD groups and Dataverse roles</td>
+            </tr>
+        </table>
+
+        <h3>Debugging Techniques</h3>
+        <ol>
+            <li>Enable verbose RBAC logging in a debug version of your app</li>
+            <li>Use Monitor tool to track variable values during security checks</li>
+            <li>Create a debug screen showing current security context and role assignments</li>
+            <li>Test with different user accounts to isolate user-specific issues</li>
+        </ol>
+    </div>
+
+    <div class="section" id="best-practices">
+        <h2>Best Practices and Scale Considerations</h2>
+
+        <h3>Small Scale Implementation (&lt;100 users, &lt;10 roles)</h3>
+        <ul>
+            <li>Use Bronze method with simple caching</li>
+            <li>Store configuration in SharePoint lists</li>
+            <li>Pre-compute all visibility flags at app start</li>
+            <li>Implement basic role management interface</li>
+        </ul>
+
+        <h3>Medium Scale Implementation (100-500 users, 10-25 roles)</h3>
+        <ul>
+            <li>Use Silver method with custom connector</li>
+            <li>Store configuration in Dataverse tables</li>
+            <li>Implement role caching with version checking</li>
+            <li>Add access request workflows and basic analytics</li>
+        </ul>
+
+        <h3>Large Scale Implementation (500+ users, 25+ roles)</h3>
+        <ul>
+            <li>Use Gold method with advanced custom connector</li>
+            <li>Implement comprehensive caching with smart invalidation</li>
+            <li>Use the RBAC component for all UI controls</li>
+            <li>Add admin tools to manage and monitor security</li>
+            <li>Implement detailed security analytics and alerting</li>
+        </ul>
+
+        <h3>Performance Optimization Tips</h3>
+        <ul>
+            <li>Cache security context persistently between app sessions (with appropriate refresh mechanisms)</li>
+            <li>Pre-compute common visibility scenarios</li>
+            <li>Use deferred security loading after UI rendering</li>
+            <li>Implement smart refresh strategies (only reload when necessary)</li>
+            <li>Batch UI updates based on role changes</li>
+        </ul>
+    </div>
+
+    <div class="section" id="conclusion">
+        <h2>Conclusion and Next Steps</h2>
+
+        <p>By implementing RBAC in your Power Apps, you've created a more secure, efficient, and user-friendly application. This approach ensures that users only see and access the features relevant to their roles, while providing administrators with powerful tools to manage access.</p>
+
+        <h3>Key Takeaways</h3>
+        <ol>
+            <li>
+                <strong>Front-End Security Is Only Part of the Story</strong>
+                <ul>
+                    <li>Always pair UI-based RBAC with proper data-level security to protect sensitive data</li>
+                    <li>Remember the defense-in-depth principle: multiple layers of security provide better protection</li>
+                    <li>Canvas app formulas can be bypassed, so never rely solely on them for sensitive operations</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Performance & Caching Are Critical</strong>
+                <ul>
+                    <li>Use local caching to avoid frequent Graph calls that can lead to throttling</li>
+                    <li>Implement smart cache invalidation strategies when roles change</li>
+                    <li>Balance security freshness with performance based on your organization's needs</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Custom Connectors & Graph API</strong>
+                <ul>
+                    <li>For larger or more complex scenarios, custom connectors provide better control</li>
+                    <li>Understand Graph API limitations and implement appropriate error handling</li>
+                    <li>Consider batch operations and throttling protection for enterprise-scale deployments</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Administration & Auditing</strong>
+                <ul>
+                    <li>Build role management capabilities into your app for easier administration</li>
+                    <li>Implement comprehensive audit logging for security and compliance</li>
+                    <li>Regularly review logs to identify potential security issues or improvement areas</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Next Steps</h3>
+        <ol>
+            <li>Integrate with other security systems like Conditional Access policies</li>
+            <li>Implement audit logging for compliance requirements</li>
+            <li>Create automated testing scripts for your RBAC implementation</li>
+            <li>Develop role-specific onboarding experiences</li>
+            <li>Extend the framework to manage complex fine-grained permissions</li>
+        </ol>
+
+        <p>For questions and support, reach out to the Power Platform community forums or consult with Microsoft documentation for the latest best practices in app security.</p>
+
+        <div class="note">
+            <strong>Continuous Improvement:</strong> Security is never "done." Regularly revisit your RBAC implementation to incorporate new best practices, address emerging threats, and optimize performance as your app evolves.
+        </div>
+    </div>
+</body>
+</html>
